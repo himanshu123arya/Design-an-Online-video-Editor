@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+    
+      class VideoFile {
+        constructor(fileName, duration, resolution, format) {
+          this.fileName = fileName;
+          this.duration = duration; 
+          this.resolution = resolution; 
+          this.format = format; 
+          this.clips = [];
+        }
+      }
+
+     
+      class Clip {
+        constructor(startTime, endTime) {
+          this.startTime = startTime;
+          this.endTime = endTime;
+        }
+
+        getDuration() {
+          return this.endTime - this.startTime;
+        }
+      }
+
+     
+      class Track {
+        constructor(type) {
+          this.type = type; 
+          this.elements = []; 
+        }
+
+        addElement(element) {
+          this.elements.push(element);
+        }
+      }
+
+  
+      class VideoEditor {
+        constructor() {
+          this.videoTracks = [];
+          this.audioTracks = [];
+          this.textTracks = [];
+        }
+
+        addTrack(track) {
+          if (track.type === "video") this.videoTracks.push(track);
+          else if (track.type === "audio") this.audioTracks.push(track);
+          else if (track.type === "text") this.textTracks.push(track);
+        }
+
+        trimClip(clip, newStart, newEnd) {
+          clip.startTime = newStart;
+          clip.endTime = newEnd;
+        }
+
+        mergeClips(clips) {
+         
+          let start = clips[0].startTime;
+          let end = clips[clips.length - 1].endTime;
+          return new Clip(start, end);
+        }
+
+        addTextOverlay(track, text, start, duration) {
+          track.addElement({ text, start, duration });
+        }
+      }
+
+
+      class Renderer {
+        static render(project) {
+          console.log("Rendering project...");
+          for (let track of project.tracks) {
+            console.log(
+              `Rendering ${track.type} track with ${track.elements.length} elements.`
+            );
+          }
+          return "final-video.mp4";
+        }
+      }
+
+  
+      class Project {
+        constructor(name) {
+          this.name = name;
+          this.tracks = [];
+          this.videoFiles = [];
+        }
+
+        addVideoFile(videoFile) {
+          this.videoFiles.push(videoFile);
+        }
+
+        addTrack(track) {
+          this.tracks.push(track);
+        }
+
+        exportProject() {
+          return Renderer.render(this);
+        }
+      }
+      // Setup
+      const project = new Project("Demo Editing Project");
+
+      const video = new VideoFile(
+        "holiday.mp4",
+        120,
+        { width: 1920, height: 1080 },
+        "mp4"
+      );
+      const clip1 = new Clip(10, 30);
+      const clip2 = new Clip(40, 60);
+
+      video.clips.push(clip1, clip2);
+      project.addVideoFile(video);
+
+      const videoTrack = new Track("video");
+      videoTrack.addElement(clip1);
+      videoTrack.addElement(clip2);
+
+      const textTrack = new Track("text");
+
+      const editor = new VideoEditor();
+      editor.addTrack(videoTrack);
+      editor.addTrack(textTrack);
+      editor.addTextOverlay(textTrack, "Welcome to the trip!", 12, 5);
+
+      project.addTrack(videoTrack);
+      project.addTrack(textTrack);
+
+      const finalVideo = project.exportProject();
+      console.log(`✅ Final video saved as: ${finalVideo}`);
+    </script>
+  </head>
+  <body></body>
+</html>
